@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';  
+import { useNavigate } from 'react-router-dom';
 // TODO ขั้นที่ 2: import { useNavigate } from 'react-router-dom' และ import { useAuth } from '../auth/AuthContext'
 
 function Login() {
@@ -9,16 +11,21 @@ function Login() {
   const [status, setStatus] = useState('typing');             // 'typing' | 'submitting'
   // TODO ขั้นที่ 2: const { login } = useAuth();  และ  const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from || '/';                   // ProtectedRoute ส่งมาบอกว่าเดิมจะไปไหน
+  const from = location.state?.from || '/'; 
+  const {login}=useAuth();
+  const navigate=useNavigate();                  // ProtectedRoute ส่งมาบอกว่าเดิมจะไปไหน
 
-  async function handleSubmit(e) {
+    async function handleSubmit(e) {
     e.preventDefault();
-    // TODO ขั้นที่ 2: แทน 2 บรรทัดด้านล่างด้วยของจริง
-    //   setStatus('submitting') และล้าง error
-    //   try { await login(email, password); navigate(from); }
-    //   catch (err) { setError(err.message); setStatus('typing'); }
-    setStatus('typing');
-    setError(`ยังไม่ได้ต่อ API เข้าสู่ระบบ (ขั้นที่ 2) สำเร็จแล้วต้องพาไปที่ ${from}`);
+    setStatus('submitting');
+    setError(null);
+    try {
+      await login(email, password);                // POST /api/auth/login + จำ token
+      navigate(from);                              // กลับไปหน้าที่ตั้งใจจะไปตอนแรก
+    } catch (err) {
+      setError(err.message);                       // ข้อความ 401 จาก server
+      setStatus('typing');
+    }
   }
 
   return (
